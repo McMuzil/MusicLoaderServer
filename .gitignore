@@ -27,7 +27,7 @@ Makefile*
 *build-*
 
 # QtCreator
-
+/_build
 *.autosave
 
 # QtCtreator Qml
