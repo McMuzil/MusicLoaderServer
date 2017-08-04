@@ -8,6 +8,7 @@
 #include <QObject>
 #include <QMessageBox>
 #include <mainwindow.h>
+#include <QFile>
 
 class Server : QObject
 {
@@ -18,12 +19,22 @@ public:
 
     MainWindow* mainWindow;
 public slots:
-    void newConnection();
-    void readTcpData();
-    void sendMessage(bool value);
+    void NewConnection();
+    void UpdateServerProgress(qint64 numBytes);
+    void CheckoutSongs(bool value);
+    void SendFile(bool value);
+    //void updateProgress(qint64 numBytes);
 private:
+    void StartTransmit();
+    void Init();
+    void Clean();
+    QFile* file;
     QTcpServer* server = NULL;
     QTcpSocket* socket = NULL;
+    int bytesToWrite;
+    quint32 totalBytes;
+    int bytesWrittenServer;
+    enum commandList {None,MusicTransmission};
 
 };
 

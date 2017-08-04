@@ -17,10 +17,6 @@ public:
     ~MainWindow();
     Ui::MainWindow *ui;
 
-    QString getLineEditText();
-private:
-
-    QLineEdit* lineEdit = NULL;
 };
 
 #endif // MAINWINDOW_H
