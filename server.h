@@ -9,6 +9,9 @@
 #include <QMessageBox>
 #include <mainwindow.h>
 #include <QFile>
+#include <QDirIterator>
+#include <QList>
+#include <QFileDialog>
 
 class Server : QObject
 {
@@ -22,12 +25,17 @@ public slots:
     void NewConnection();
     void UpdateServerProgress(qint64 numBytes);
     void CheckoutSongs(bool value);
-    void SendFile(bool value);
+    void CheckForNewSongs(bool value);
+    void SelectMusicLocation(bool value);
     //void updateProgress(qint64 numBytes);
 private:
-    void StartTransmit();
-    void Init();
+    void StartTransmit(QList<QString>::iterator iter);
+    void Init(QString songName);
     void Clean();
+
+    QString musicDirectory;
+    QList<QString>::iterator listIterator;
+    QStringList songList;
     QFile* file;
     QTcpServer* server = NULL;
     QTcpSocket* socket = NULL;

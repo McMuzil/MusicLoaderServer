@@ -1,6 +1,9 @@
 #include "server.h"
 #include "ui_mainwindow.h"
 #include <QFileInfo>
+#include <QTimer>
+#include <windows.h>
+#include <QSettings>
 
 static const int PayloadSize = 64 * 1024; // 64 KB
 
@@ -8,15 +11,14 @@ Server::Server()
 {
     mainWindow = new MainWindow();
 
+
+
     server = new QTcpServer(mainWindow);
 
     QObject::connect(server, SIGNAL(newConnection()),this, SLOT(NewConnection()));
     QObject::connect(mainWindow->ui->CheckoutSongs,SIGNAL(clicked(bool)), this, SLOT(CheckoutSongs(bool)));
-    //QObject::connect(mainWindow->ui->pushButton_2, SIGNAL(clicked(bool)),this,SLOT(sendFile(bool)));
-
-
-
-
+    QObject::connect(mainWindow->ui->actionCheck_for_new_songs,SIGNAL(triggered(bool)),this,SLOT(CheckForNewSongs(bool)));
+    QObject::connect(mainWindow->ui->actionSelect_music_location,SIGNAL(triggered(bool)),this,SLOT(SelectMusicLocation(bool)));
     if(!server->listen(QHostAddress::Any, 9999))
     {
         qDebug() << "Server could not start";
@@ -26,7 +28,13 @@ Server::Server()
         qDebug() << "Server Started!";
     }
 
+    QSettings settings("Settings.ini", QSettings::IniFormat);
+    settings.beginGroup("server");
+    musicDirectory = settings.value("musicDirectory", "").toString();
+    mainWindow->ui->directoryLabel->setText(musicDirectory);
+
 }
+
 
 Server::~Server()
 {
@@ -48,13 +56,38 @@ void Server::CheckoutSongs(bool value)
     // do some verifications
     // check songs
     // check connection
+
+    if(socket == NULL) return;
+
+    CheckForNewSongs(value);
+
     qDebug() << "CheckoutSongs clicked";
-    StartTransmit();
+
+    listIterator = songList.begin();
+
+    StartTransmit(listIterator);
+    //QTimer *timer = new QTimer;
+    //timer->setSingleShot(true);
+    //connect(timer, SIGNAL(timeout()), this,SLOT(timeout()));
+
+    //timer->start(3000);
+
+
+    //socket->waitForBytesWritten(1000);
+    //StartTransmit("2.txt");
+    //socket->waitForBytesWritten(1000);
+    //StartTransmit("3.txt");
+    //socket->waitForBytesWritten(1000);
+
 }
 
-void Server::StartTransmit()
+void Server::StartTransmit(QList<QString>::iterator iter)
 {
-    Init();
+    if(iter == songList.end()) return;
+
+
+
+    Init(*iter);
 
 
 
@@ -94,6 +127,9 @@ void Server::StartTransmit()
 
     // and file name
     socket->write(fileInfo.fileName().toLatin1());
+    qDebug() << fileInfo.fileName().toLatin1().data() << "Latin1";
+    qDebug() << fileInfo.fileName().toUtf8() << "Latin1";
+    qDebug() << fileInfo.fileName().toLocal8Bit().data() << "Latin1";
     socket->waitForBytesWritten(1000);
     qDebug() << fileInfo.fileName() << " file name";
 
@@ -102,23 +138,27 @@ void Server::StartTransmit()
     QObject::connect(socket,SIGNAL(bytesWritten(qint64)),this, SLOT(UpdateServerProgress(qint64)));
 
     bytesToWrite = totalBytes - (int)socket->write(file->read(qMin(bytesToWrite,PayloadSize)));
-    qDebug() << "end of StartTransmit";
+    qDebug() << "end of StartTransmit " << bytesToWrite;
 
 }
 
-void Server::Init()
+void Server::Init(QString songName)
 {
     bytesWrittenServer = 0;
 
-    file = new QFile("SeabedStation.png");
+    file = new QFile(songName);
     file->open(QIODevice::ReadOnly);
     bytesToWrite = totalBytes = file->size();
 }
 
 void Server::UpdateServerProgress(qint64 numBytes)
 {
-    qDebug() << "pishem";
     bytesWrittenServer += (int)numBytes;
+
+
+    mainWindow->ui->progressBar->setMaximum(totalBytes);
+    mainWindow->ui->progressBar->setValue(bytesWrittenServer);
+    mainWindow->ui->label->setText(tr("Sent %1MB").arg(bytesWrittenServer / (1024 * 1024)));
 
     if(bytesToWrite > 0 && socket->bytesToWrite() <= 4*PayloadSize)
     {
@@ -127,43 +167,48 @@ void Server::UpdateServerProgress(qint64 numBytes)
     else
     {
         Clean();
+
     }
-    mainWindow->ui->progressBar->setMaximum(totalBytes);
-    mainWindow->ui->progressBar->setValue(bytesWrittenServer);
-    mainWindow->ui->label->setText(tr("Sent %1MB").arg(bytesWrittenServer / (1024 * 1024)));
 }
 
 void Server::Clean()
 {
+
     file->close();
     QObject::disconnect(socket,SIGNAL(bytesWritten(qint64)),this, SLOT(UpdateServerProgress(qint64)));
+    Sleep(1000);
+    StartTransmit(++listIterator);
 }
 
 
-
-void Server::SendFile(bool value)
+void Server::CheckForNewSongs(bool value)
 {
-    QFile file("SeabedStation.png");
-    qDebug() <<  file.size();
-    totalBytes = file.size();
-    if(file.open(QIODevice::ReadOnly))
+    songList.clear();
+    QDirIterator it(musicDirectory, QStringList() << "*.mp3", QDir::Files);
+    while (it.hasNext())
     {
-        if(socket == NULL) return;
-        if(socket->state() != QTcpSocket::ConnectedState) return;
+        QString songName = it.next();
+        songList.append(songName);
+        //qDebug() << songList.last();
+        QFile file;
+        file.setFileName(songName);
+        //file.open(QIODevice::ReadOnly);
+        QFileInfo fileInfo(file);
 
-        QByteArray rawFile;
-        rawFile = file.readAll();
-        bytesToWrite = totalBytes - (int)socket->write(rawFile);//,PayloadSize);
-        qDebug() << "sending" << rawFile.size();
+        qDebug() << fileInfo.fileName();
+        //file.close();
     }
-    file.close();
 }
-/*
-void Server::updateProgress(qint64 numBytes)
-{
-    bytesWritten += (int)numBytes;
 
-    if(bytesToWrite > 0 && socket->bytesToWrite() <= 4*PayloadSize)
-        bytesToWrite -= (int)socket->write(qMin(bytesToWrite, PayloadSize), )
+void Server::SelectMusicLocation(bool value)
+{
+    musicDirectory = QFileDialog::getExistingDirectory(mainWindow, tr("Open Directory"), "/home",QFileDialog::DontResolveSymlinks);
+    if(musicDirectory != "")
+    {
+        mainWindow->ui->directoryLabel->setText(musicDirectory);
+        QSettings settings("Settings.ini", QSettings::IniFormat);
+        settings.beginGroup("server");
+        settings.setValue("musicDirectory", musicDirectory);
+        qDebug() << musicDirectory;
+    }
 }
-*/

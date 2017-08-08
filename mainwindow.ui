@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>198</width>
-    <height>106</height>
+    <width>284</width>
+    <height>229</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -32,6 +32,16 @@
      </spacer>
     </item>
     <item>
+     <widget class="QLabel" name="directoryLabel">
+      <property name="text">
+       <string/>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item>
      <widget class="QLabel" name="label">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -52,7 +62,7 @@
       <item>
        <widget class="QPushButton" name="CheckoutSongs">
         <property name="text">
-         <string>Checkout Songs</string>
+         <string>Send Music</string>
         </property>
        </widget>
       </item>
@@ -67,6 +77,34 @@
     </item>
    </layout>
   </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>284</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuMusic">
+    <property name="title">
+     <string>Music</string>
+    </property>
+    <addaction name="actionCheck_for_new_songs"/>
+    <addaction name="actionSelect_music_location"/>
+   </widget>
+   <addaction name="menuMusic"/>
+  </widget>
+  <action name="actionCheck_for_new_songs">
+   <property name="text">
+    <string>Check for new songs</string>
+   </property>
+  </action>
+  <action name="actionSelect_music_location">
+   <property name="text">
+    <string>Select music location</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>
