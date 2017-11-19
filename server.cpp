@@ -61,7 +61,7 @@ void Server::CheckoutFiles(bool value)
 
     CheckForNewFiles(value);
 
-    qDebug() << "CheckoutАшдуы clicked";
+    qDebug() << "CheckoutFiles clicked";
 
     listIterator = filesList.begin();
 
@@ -184,7 +184,7 @@ void Server::Clean()
 void Server::CheckForNewFiles(bool value)
 {
     filesList.clear();
-    QDirIterator it(filesDirectory, QStringList() << "*.flv", QDir::Files);
+    QDirIterator it(filesDirectory, QStringList() << "*.*", QDir::Files);
     while (it.hasNext())
     {
         QString songName = it.next();
