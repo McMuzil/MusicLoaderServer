@@ -62,7 +62,7 @@
       <item>
        <widget class="QPushButton" name="CheckoutSongs">
         <property name="text">
-         <string>Send Music</string>
+         <string>Send Files</string>
         </property>
        </widget>
       </item>
@@ -83,12 +83,12 @@
      <x>0</x>
      <y>0</y>
      <width>284</width>
-     <height>20</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuMusic">
     <property name="title">
-     <string>Music</string>
+     <string>File</string>
     </property>
     <addaction name="actionCheck_for_new_songs"/>
     <addaction name="actionSelect_music_location"/>
@@ -97,12 +97,12 @@
   </widget>
   <action name="actionCheck_for_new_songs">
    <property name="text">
-    <string>Check for new songs</string>
+    <string>Check for new files</string>
    </property>
   </action>
   <action name="actionSelect_music_location">
    <property name="text">
-    <string>Select music location</string>
+    <string>Select files location</string>
    </property>
   </action>
  </widget>

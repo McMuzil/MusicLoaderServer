@@ -24,18 +24,18 @@ public:
 public slots:
     void NewConnection();
     void UpdateServerProgress(qint64 numBytes);
-    void CheckoutSongs(bool value);
-    void CheckForNewSongs(bool value);
-    void SelectMusicLocation(bool value);
+    void CheckoutFiles(bool value);
+    void CheckForNewFiles(bool value);
+    void SelectFilesLocation(bool value);
     //void updateProgress(qint64 numBytes);
 private:
     void StartTransmit(QList<QString>::iterator iter);
     void Init(QString songName);
     void Clean();
 
-    QString musicDirectory;
+    QString filesDirectory;
     QList<QString>::iterator listIterator;
-    QStringList songList;
+    QStringList filesList;
     QFile* file;
     QTcpServer* server = NULL;
     QTcpSocket* socket = NULL;

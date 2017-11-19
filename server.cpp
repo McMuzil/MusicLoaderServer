@@ -16,9 +16,9 @@ Server::Server()
     server = new QTcpServer(mainWindow);
 
     QObject::connect(server, SIGNAL(newConnection()),this, SLOT(NewConnection()));
-    QObject::connect(mainWindow->ui->CheckoutSongs,SIGNAL(clicked(bool)), this, SLOT(CheckoutSongs(bool)));
-    QObject::connect(mainWindow->ui->actionCheck_for_new_songs,SIGNAL(triggered(bool)),this,SLOT(CheckForNewSongs(bool)));
-    QObject::connect(mainWindow->ui->actionSelect_music_location,SIGNAL(triggered(bool)),this,SLOT(SelectMusicLocation(bool)));
+    QObject::connect(mainWindow->ui->CheckoutSongs,SIGNAL(clicked(bool)), this, SLOT(CheckoutFiles(bool)));
+    QObject::connect(mainWindow->ui->actionCheck_for_new_songs,SIGNAL(triggered(bool)),this,SLOT(CheckForNewFiles(bool)));
+    QObject::connect(mainWindow->ui->actionSelect_music_location,SIGNAL(triggered(bool)),this,SLOT(SelectFilesLocation(bool)));
     if(!server->listen(QHostAddress::Any, 9999))
     {
         qDebug() << "Server could not start";
@@ -30,8 +30,8 @@ Server::Server()
 
     QSettings settings("Settings.ini", QSettings::IniFormat);
     settings.beginGroup("server");
-    musicDirectory = settings.value("musicDirectory", "").toString();
-    mainWindow->ui->directoryLabel->setText(musicDirectory);
+    filesDirectory = settings.value("filesDirectory", "").toString();
+    mainWindow->ui->directoryLabel->setText(filesDirectory);
 
 }
 
@@ -51,19 +51,19 @@ void Server::NewConnection()
     //server->close();
 }
 
-void Server::CheckoutSongs(bool value)
+void Server::CheckoutFiles(bool value)
 {
     // do some verifications
-    // check songs
+    // check files
     // check connection
 
     if(socket == NULL) return;
 
-    CheckForNewSongs(value);
+    CheckForNewFiles(value);
 
-    qDebug() << "CheckoutSongs clicked";
+    qDebug() << "CheckoutАшдуы clicked";
 
-    listIterator = songList.begin();
+    listIterator = filesList.begin();
 
     StartTransmit(listIterator);
     //QTimer *timer = new QTimer;
@@ -83,7 +83,7 @@ void Server::CheckoutSongs(bool value)
 
 void Server::StartTransmit(QList<QString>::iterator iter)
 {
-    if(iter == songList.end()) return;
+    if(iter == filesList.end()) return;
 
 
 
@@ -142,11 +142,11 @@ void Server::StartTransmit(QList<QString>::iterator iter)
 
 }
 
-void Server::Init(QString songName)
+void Server::Init(QString fileName)
 {
     bytesWrittenServer = 0;
 
-    file = new QFile(songName);
+    file = new QFile(fileName);
     file->open(QIODevice::ReadOnly);
     bytesToWrite = totalBytes = file->size();
 }
@@ -181,14 +181,14 @@ void Server::Clean()
 }
 
 
-void Server::CheckForNewSongs(bool value)
+void Server::CheckForNewFiles(bool value)
 {
-    songList.clear();
-    QDirIterator it(musicDirectory, QStringList() << "*.mp3", QDir::Files);
+    filesList.clear();
+    QDirIterator it(filesDirectory, QStringList() << "*.flv", QDir::Files);
     while (it.hasNext())
     {
         QString songName = it.next();
-        songList.append(songName);
+        filesList.append(songName);
         //qDebug() << songList.last();
         QFile file;
         file.setFileName(songName);
@@ -200,15 +200,15 @@ void Server::CheckForNewSongs(bool value)
     }
 }
 
-void Server::SelectMusicLocation(bool value)
+void Server::SelectFilesLocation(bool value)
 {
-    musicDirectory = QFileDialog::getExistingDirectory(mainWindow, tr("Open Directory"), "/home",QFileDialog::DontResolveSymlinks);
-    if(musicDirectory != "")
+    filesDirectory = QFileDialog::getExistingDirectory(mainWindow, tr("Open Directory"), "/home",QFileDialog::DontResolveSymlinks);
+    if(filesDirectory != "")
     {
-        mainWindow->ui->directoryLabel->setText(musicDirectory);
+        mainWindow->ui->directoryLabel->setText(filesDirectory);
         QSettings settings("Settings.ini", QSettings::IniFormat);
         settings.beginGroup("server");
-        settings.setValue("musicDirectory", musicDirectory);
-        qDebug() << musicDirectory;
+        settings.setValue("musicDirectory", filesDirectory);
+        qDebug() << filesDirectory;
     }
 }
